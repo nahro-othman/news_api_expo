@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Article } from '../../domain/entities/Article';
+import { useBookmarks } from '../../application/providers/BookmarkProvider';
 
 interface ArticleCardProps {
   article: Article;
@@ -18,6 +19,8 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
   compactView = false,
   fontSize = 'medium'
 }) => {
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -67,6 +70,13 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
 
   const fontSizes = getFontSizes();
 
+  const handleBookmarkPress = async (e: any) => {
+    e.stopPropagation();
+    await toggleBookmark(article);
+  };
+
+  const bookmarked = isBookmarked(article);
+
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={compactView ? styles.compactContainer : styles.container}>
       <View style={styles.card}>
@@ -86,10 +96,24 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
                 </Text>
               )}
             </View>
-            <View style={styles.dateContainer}>
-              <Text style={[styles.dateText, { fontSize: fontSizes.date }]}>
-                {formatDate(article.publishedAt)}
-              </Text>
+            <View style={styles.headerRight}>
+              <View style={styles.dateContainer}>
+                <Text style={[styles.dateText, { fontSize: fontSizes.date }]}>
+                  {formatDate(article.publishedAt)}
+                </Text>
+              </View>
+              {/* Bookmark Button */}
+              <TouchableOpacity 
+                style={[styles.bookmarkButton, bookmarked && styles.bookmarkButtonActive]}
+                onPress={handleBookmarkPress}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons 
+                  name={bookmarked ? "bookmark" : "bookmark-border"} 
+                  size={18} 
+                  color={bookmarked ? "#ffffff" : "#000000"} 
+                />
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -200,6 +224,11 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontWeight: '500',
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   dateContainer: {
     alignItems: 'flex-end',
   },
@@ -207,6 +236,18 @@ const styles = StyleSheet.create({
     color: '#666666',
     fontWeight: '600',
     letterSpacing: 0.3,
+  },
+  bookmarkButton: {
+    width: 32,
+    height: 32,
+    borderWidth: 2,
+    borderColor: '#000000',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bookmarkButtonActive: {
+    backgroundColor: '#000000',
   },
   contentLayout: {
     flexDirection: 'row',

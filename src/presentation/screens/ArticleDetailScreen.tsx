@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, ScrollView, Text, Image, StyleSheet, Dimensions } from 'react-native';
+import { View, ScrollView, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Article } from '../../domain/entities/Article';
+import { useBookmarks } from '../../application/providers/BookmarkProvider';
 
 interface Props {
   route: {
@@ -13,6 +14,7 @@ interface Props {
 
 export const ArticleDetailScreen: React.FC<Props> = ({ route }) => {
   const { article } = route.params;
+  const { isBookmarked, toggleBookmark } = useBookmarks();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -34,6 +36,12 @@ export const ArticleDetailScreen: React.FC<Props> = ({ route }) => {
     return cleanContent;
   };
 
+  const handleBookmarkPress = async () => {
+    await toggleBookmark(article);
+  };
+
+  const bookmarked = isBookmarked(article);
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       
@@ -50,11 +58,34 @@ export const ArticleDetailScreen: React.FC<Props> = ({ route }) => {
           )}
         </View>
         
-        <View style={styles.dateContainer}>
-          <MaterialIcons name="schedule" size={16} color="#666666" />
-          <Text style={styles.dateText}>{formatDate(article.publishedAt)}</Text>
+        <View style={styles.headerRight}>
+          <View style={styles.dateContainer}>
+            <MaterialIcons name="schedule" size={16} color="#666666" />
+            <Text style={styles.dateText}>{formatDate(article.publishedAt)}</Text>
+          </View>
+          
+          {/* Bookmark Button */}
+          <TouchableOpacity 
+            style={[styles.bookmarkButton, bookmarked && styles.bookmarkButtonActive]}
+            onPress={handleBookmarkPress}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons 
+              name={bookmarked ? "bookmark" : "bookmark-border"} 
+              size={24} 
+              color={bookmarked ? "#ffffff" : "#000000"} 
+            />
+          </TouchableOpacity>
         </View>
       </View>
+
+      {/* Bookmark Status */}
+      {bookmarked && (
+        <View style={styles.bookmarkStatus}>
+          <MaterialIcons name="bookmark" size={16} color="#000000" />
+          <Text style={styles.bookmarkStatusText}>Article saved to bookmarks</Text>
+        </View>
+      )}
 
       {/* Title */}
       <View style={styles.titleContainer}>
@@ -142,6 +173,11 @@ export const ArticleDetailScreen: React.FC<Props> = ({ route }) => {
           <Text style={styles.detailKey}>Has Image:</Text>
           <Text style={styles.detailValue}>{article.urlToImage ? 'Yes' : 'No'}</Text>
         </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.detailKey}>Bookmarked:</Text>
+          <Text style={styles.detailValue}>{bookmarked ? 'Yes' : 'No'}</Text>
+        </View>
       </View>
 
       {/* Footer */}
@@ -192,16 +228,46 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontWeight: '500',
   },
+  headerRight: {
+    alignItems: 'flex-end',
+    gap: 12,
+  },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexShrink: 1,
   },
   dateText: {
     fontSize: 12,
     color: '#666666',
     marginLeft: 6,
     fontWeight: '500',
+  },
+  bookmarkButton: {
+    width: 44,
+    height: 44,
+    borderWidth: 2,
+    borderColor: '#000000',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bookmarkButtonActive: {
+    backgroundColor: '#000000',
+  },
+  bookmarkStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    backgroundColor: '#f8f8f8',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  bookmarkStatusText: {
+    fontSize: 14,
+    color: '#000000',
+    fontWeight: '600',
+    marginLeft: 8,
   },
   titleContainer: {
     padding: 20,

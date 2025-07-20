@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Provider as PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { NewsProvider } from './src/application/providers/NewsProvider';
 import { SettingsProvider } from './src/application/providers/SettingsProvider';
+import { BookmarkProvider } from './src/application/providers/BookmarkProvider';
 import { AppNavigator } from './src/presentation/navigation/AppNavigator';
 import { SplashScreen } from './src/presentation/components/SplashScreen';
 
@@ -36,10 +37,12 @@ export default function App() {
   return (
     <PaperProvider theme={cleanTheme}>
       <SettingsProvider>
-        <NewsProvider>
-          <AppNavigator />
-          <StatusBar style="dark" backgroundColor="#ffffff" />
-        </NewsProvider>
+        <BookmarkProvider>
+          <NewsProvider>
+            <AppNavigator />
+            <StatusBar style="dark" backgroundColor="#ffffff" />
+          </NewsProvider>
+        </BookmarkProvider>
       </SettingsProvider>
     </PaperProvider>
   );

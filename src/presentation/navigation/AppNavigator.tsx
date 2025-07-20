@@ -8,6 +8,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { ArticleDetailScreen } from '../screens/ArticleDetailScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { BookmarksScreen } from '../screens/BookmarksScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -116,6 +117,31 @@ const SearchStack = () => (
   </Stack.Navigator>
 );
 
+const BookmarksStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen 
+      name="Bookmarks" 
+      component={BookmarksScreen}
+      options={{
+        header: () => <CustomHeader title="Bookmarks" />
+      }}
+    />
+    <Stack.Screen 
+      name="ArticleDetail" 
+      component={ArticleDetailScreen}
+      options={({ navigation }) => ({
+        header: () => (
+          <CustomHeader 
+            title="Article" 
+            showBackButton={true}
+            onBackPress={() => navigation.goBack()}
+          />
+        )
+      })}
+    />
+  </Stack.Navigator>
+);
+
 const SettingsStack = () => (
   <Stack.Navigator>
     <Stack.Screen 
@@ -140,6 +166,8 @@ export const AppNavigator: React.FC = () => {
               iconName = 'home';
             } else if (route.name === 'SearchTab') {
               iconName = 'search';
+            } else if (route.name === 'BookmarksTab') {
+              iconName = 'bookmark';
             } else if (route.name === 'SettingsTab') {
               iconName = 'settings';
             } else {
@@ -182,6 +210,21 @@ export const AppNavigator: React.FC = () => {
                 focused && styles.tabBarLabelTextFocused
               ]}>
                 SEARCH
+              </Text>
+            )
+          }}
+        />
+        <Tab.Screen 
+          name="BookmarksTab" 
+          component={BookmarksStack}
+          options={{ 
+            title: 'BOOKMARKS',
+            tabBarLabel: ({ focused }) => (
+              <Text style={[
+                styles.tabBarLabelText,
+                focused && styles.tabBarLabelTextFocused
+              ]}>
+                BOOKMARKS
               </Text>
             )
           }}
@@ -282,7 +325,7 @@ const styles = StyleSheet.create({
     display: 'none', // Hide default label
   },
   tabBarLabelText: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '700',
     color: '#000000',
     letterSpacing: 0.5,
