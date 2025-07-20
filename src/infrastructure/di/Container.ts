@@ -48,4 +48,13 @@ export class Container {
   public getNewsRepository(): NewsRepositoryImpl {
     return this.newsRepository;
   }
+
+  // Static convenience methods
+  public static getNewsService(): NewsService {
+    return Container.getInstance().getNewsService();
+  }
+
+  public static getNewsRepository(): NewsRepositoryImpl {
+    return Container.getInstance().getNewsRepository();
+  }
 } 

@@ -1,6 +1,7 @@
-import { GetTopHeadlinesUseCase } from '../../domain/usecases/GetTopHeadlinesUseCase';
+import { GetTopHeadlinesUseCase, TopHeadlinesParams } from '../../domain/usecases/GetTopHeadlinesUseCase';
 import { SearchArticlesUseCase } from '../../domain/usecases/SearchArticlesUseCase';
-import { NewsResponse } from '../../domain/entities/Article';
+import { SearchParams } from '../../domain/repositories/NewsRepository';
+import { Article } from '../../domain/entities/Article';
 
 export class NewsService {
   constructor(
@@ -8,21 +9,39 @@ export class NewsService {
     private searchArticlesUseCase: SearchArticlesUseCase
   ) {}
 
-  async getTopHeadlines(country?: string, category?: string): Promise<NewsResponse> {
-    try {
-      return await this.getTopHeadlinesUseCase.execute(country, category);
-    } catch (error) {
-      console.error('Error fetching top headlines:', error);
-      throw error;
-    }
+  async getTopHeadlines(params: TopHeadlinesParams): Promise<Article[]> {
+    return await this.getTopHeadlinesUseCase.execute(params);
   }
 
-  async searchArticles(query: string, sortBy?: string): Promise<NewsResponse> {
-    try {
-      return await this.searchArticlesUseCase.execute(query, sortBy);
-    } catch (error) {
-      console.error('Error searching articles:', error);
-      throw error;
+  async searchArticles(params: SearchParams): Promise<Article[]> {
+    return await this.searchArticlesUseCase.execute(params);
+  }
+
+  // Helper method to create date filters
+  createDateFilter(dateRange: string): { from?: string; to?: string } {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    switch (dateRange) {
+      case 'today':
+        return { from: today.toISOString() };
+      case 'yesterday':
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        return { 
+          from: yesterday.toISOString(),
+          to: today.toISOString()
+        };
+      case 'week':
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return { from: weekAgo.toISOString() };
+      case 'month':
+        const monthAgo = new Date(today);
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        return { from: monthAgo.toISOString() };
+      default:
+        return {};
     }
   }
 } 

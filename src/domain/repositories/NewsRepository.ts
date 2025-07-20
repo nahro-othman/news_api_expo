@@ -1,8 +1,17 @@
 import { Article, NewsResponse } from '../entities/Article';
+import { TopHeadlinesParams } from '../usecases/GetTopHeadlinesUseCase';
+
+export interface SearchParams {
+  q: string;
+  sources?: string;
+  from?: string;
+  to?: string;
+  sortBy?: 'relevancy' | 'popularity' | 'publishedAt';
+  pageSize?: number;
+  page?: number;
+}
 
 export interface NewsRepository {
-  getTopHeadlines(country?: string, category?: string): Promise<NewsResponse>;
-  getEverything(query: string, sortBy?: string): Promise<NewsResponse>;
-  getArticlesByCategory(category: string): Promise<NewsResponse>;
-  searchArticles(query: string): Promise<NewsResponse>;
+  getTopHeadlines(params: TopHeadlinesParams): Promise<Article[]>;
+  searchArticles(params: SearchParams): Promise<Article[]>;
 } 

@@ -1,10 +1,10 @@
-import { NewsRepository } from '../repositories/NewsRepository';
-import { NewsResponse } from '../entities/Article';
+import { NewsRepository, SearchParams } from '../repositories/NewsRepository';
+import { Article } from '../entities/Article';
 
 export class SearchArticlesUseCase {
   constructor(private newsRepository: NewsRepository) {}
 
-  async execute(query: string, sortBy?: string): Promise<NewsResponse> {
-    return await this.newsRepository.getEverything(query, sortBy);
+  async execute(params: SearchParams): Promise<Article[]> {
+    return this.newsRepository.searchArticles(params);
   }
 } 

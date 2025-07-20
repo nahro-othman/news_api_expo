@@ -3,62 +3,56 @@ import { NewsResponse } from '../../domain/entities/Article';
 import { API_CONFIG } from '../config/api.config';
 
 export class NewsApiClient {
-  private api: AxiosInstance;
-  private readonly API_KEY = API_CONFIG.NEWS_API.API_KEY;
-  private readonly BASE_URL = API_CONFIG.NEWS_API.BASE_URL;
+  private client: AxiosInstance;
 
   constructor() {
-    this.api = axios.create({
-      baseURL: this.BASE_URL,
+    this.client = axios.create({
+      baseURL: API_CONFIG.NEWS_API.BASE_URL,
       timeout: API_CONFIG.NEWS_API.TIMEOUT,
+      headers: {
+        'X-Api-Key': API_CONFIG.NEWS_API.API_KEY,
+        'Content-Type': 'application/json',
+      },
     });
+  }
 
-    // Add request interceptor to include API key
-    this.api.interceptors.request.use((config) => {
-      config.params = {
-        ...config.params,
-        apiKey: this.API_KEY,
+  async getTopHeadlines(params: Record<string, string> = {}): Promise<NewsResponse> {
+    try {
+      const defaultParams = {
+        country: API_CONFIG.DEFAULT_PARAMS.COUNTRY,
+        pageSize: '20',
       };
-      return config;
-    });
 
-    // Add response interceptor for error handling
-    this.api.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        console.error('API Error:', error.response?.data || error.message);
-        throw error;
-      }
-    );
-  }
+      const queryParams = { ...defaultParams, ...params };
+      
+      const response = await this.client.get(API_CONFIG.ENDPOINTS.TOP_HEADLINES, {
+        params: queryParams,
+      });
 
-  async getTopHeadlines(country: string = API_CONFIG.DEFAULT_PARAMS.COUNTRY, category?: string): Promise<NewsResponse> {
-    const params: any = { country };
-    if (category) {
-      params.category = category;
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching top headlines:', error);
+      throw new Error('Failed to fetch top headlines');
     }
-
-    const response = await this.api.get(API_CONFIG.ENDPOINTS.TOP_HEADLINES, { params });
-    return response.data;
   }
 
-  async getEverything(query: string, sortBy: string = API_CONFIG.DEFAULT_PARAMS.SORT_BY): Promise<NewsResponse> {
-    const params = {
-      q: query,
-      sortBy,
-    };
+  async searchEverything(params: Record<string, string>): Promise<NewsResponse> {
+    try {
+      const defaultParams = {
+        sortBy: API_CONFIG.DEFAULT_PARAMS.SORT_BY,
+        pageSize: '20',
+      };
 
-    const response = await this.api.get(API_CONFIG.ENDPOINTS.EVERYTHING, { params });
-    return response.data;
-  }
+      const queryParams = { ...defaultParams, ...params };
+      
+      const response = await this.client.get(API_CONFIG.ENDPOINTS.EVERYTHING, {
+        params: queryParams,
+      });
 
-  async getArticlesByCategory(category: string): Promise<NewsResponse> {
-    const params = {
-      country: API_CONFIG.DEFAULT_PARAMS.COUNTRY,
-      category,
-    };
-
-    const response = await this.api.get(API_CONFIG.ENDPOINTS.TOP_HEADLINES, { params });
-    return response.data;
+      return response.data;
+    } catch (error) {
+      console.error('Error searching articles:', error);
+      throw new Error('Failed to search articles');
+    }
   }
 } 

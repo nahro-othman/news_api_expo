@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { Title, Paragraph, Divider } from 'react-native-paper';
+import { View, ScrollView, Text, Image, StyleSheet, Dimensions } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Article } from '../../domain/entities/Article';
 
-interface ArticleDetailScreenProps {
+interface Props {
   route: {
     params: {
       article: Article;
@@ -11,12 +11,13 @@ interface ArticleDetailScreenProps {
   };
 }
 
-export const ArticleDetailScreen: React.FC<ArticleDetailScreenProps> = ({ route }) => {
+export const ArticleDetailScreen: React.FC<Props> = ({ route }) => {
   const { article } = route.params;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
+      weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -25,60 +26,131 @@ export const ArticleDetailScreen: React.FC<ArticleDetailScreenProps> = ({ route 
     });
   };
 
-  const formatContent = (content: string) => {
-    if (!content) return '';
-    // Remove the "[+X chars]" pattern that appears at the end of truncated content
-    return content.replace(/\s*\[\+\d+\s*chars\]$/, '');
+  const formatContent = (content: string | null) => {
+    if (!content) return null;
+    
+    // Remove the common "[+XXX chars]" suffix from content
+    const cleanContent = content.replace(/\[\+\d+\s+chars\]$/, '').trim();
+    return cleanContent;
   };
 
   return (
-    <ScrollView style={styles.container}>
-      {article.urlToImage && (
-        <Image 
-          source={{ uri: article.urlToImage }} 
-          style={styles.image}
-          resizeMode="cover"
-        />
-      )}
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       
-      <View style={styles.content}>
-        <Title style={styles.title}>
-          {article.title}
-        </Title>
-        
-        <View style={styles.meta}>
-          <Text style={styles.source}>{article.source.name}</Text>
-          <Text style={styles.date}>{formatDate(article.publishedAt)}</Text>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <View style={styles.sourceContainer}>
+          <View style={styles.sourceBadge}>
+            <Text style={styles.sourceText}>
+              {article.source.name.toUpperCase()}
+            </Text>
+          </View>
+          {article.source.id && (
+            <Text style={styles.sourceId}>#{article.source.id}</Text>
+          )}
         </View>
         
-        {article.author && (
-          <Text style={styles.author}>By {article.author}</Text>
-        )}
+        <View style={styles.dateContainer}>
+          <MaterialIcons name="schedule" size={16} color="#666666" />
+          <Text style={styles.dateText}>{formatDate(article.publishedAt)}</Text>
+        </View>
+      </View>
+
+      {/* Title */}
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>{article.title}</Text>
+      </View>
+
+      {/* Author */}
+      {article.author && (
+        <View style={styles.authorContainer}>
+          <MaterialIcons name="person" size={16} color="#666666" />
+          <Text style={styles.authorText}>By {article.author}</Text>
+        </View>
+      )}
+
+      {/* Image */}
+      {article.urlToImage && (
+        <View style={styles.imageContainer}>
+          <Image 
+            source={{ uri: article.urlToImage }} 
+            style={styles.image}
+            resizeMode="cover"
+          />
+        </View>
+      )}
+
+      {/* Description */}
+      {article.description && (
+        <View style={styles.descriptionContainer}>
+          <Text style={styles.descriptionLabel}>SUMMARY</Text>
+          <Text style={styles.description}>{article.description}</Text>
+        </View>
+      )}
+
+      {/* Content */}
+      {article.content && formatContent(article.content) && (
+        <View style={styles.contentContainer}>
+          <Text style={styles.contentLabel}>ARTICLE CONTENT</Text>
+          <Text style={styles.content}>{formatContent(article.content)}</Text>
+        </View>
+      )}
+
+      {/* URL Info */}
+      <View style={styles.urlContainer}>
+        <Text style={styles.urlLabel}>SOURCE URL</Text>
+        <View style={styles.urlBox}>
+          <MaterialIcons name="link" size={16} color="#666666" />
+          <Text style={styles.urlText} numberOfLines={2}>
+            {article.url}
+          </Text>
+        </View>
+        <Text style={styles.urlNote}>
+          Note: URLs are not opened in this app for security and privacy reasons.
+        </Text>
+      </View>
+
+      {/* Article Details */}
+      <View style={styles.detailsContainer}>
+        <Text style={styles.detailsLabel}>ARTICLE DETAILS</Text>
         
-        <Divider style={styles.divider} />
+        <View style={styles.detailRow}>
+          <Text style={styles.detailKey}>Source:</Text>
+          <Text style={styles.detailValue}>{article.source.name}</Text>
+        </View>
         
-        <Paragraph style={styles.description}>
-          {article.description}
-        </Paragraph>
-        
-        {article.content && (
-          <View style={styles.contentSection}>
-            <Title style={styles.contentTitle}>Full Article</Title>
-            <Paragraph style={styles.fullContent}>
-              {formatContent(article.content)}
-            </Paragraph>
+        {article.source.id && (
+          <View style={styles.detailRow}>
+            <Text style={styles.detailKey}>Source ID:</Text>
+            <Text style={styles.detailValue}>{article.source.id}</Text>
           </View>
         )}
         
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Source: {article.source.name}
-          </Text>
-          <Text style={styles.footerText}>
-            Published: {formatDate(article.publishedAt)}
-          </Text>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailKey}>Published:</Text>
+          <Text style={styles.detailValue}>{formatDate(article.publishedAt)}</Text>
+        </View>
+        
+        {article.author && (
+          <View style={styles.detailRow}>
+            <Text style={styles.detailKey}>Author:</Text>
+            <Text style={styles.detailValue}>{article.author}</Text>
+          </View>
+        )}
+        
+        <View style={styles.detailRow}>
+          <Text style={styles.detailKey}>Has Image:</Text>
+          <Text style={styles.detailValue}>{article.urlToImage ? 'Yes' : 'No'}</Text>
         </View>
       </View>
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          This article is displayed for reading purposes only. External links are not opened for security.
+        </Text>
+      </View>
+
     </ScrollView>
   );
 };
@@ -90,74 +162,189 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
-  image: {
-    width: width,
-    height: 250,
-  },
-  content: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000000',
+  },
+  sourceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  sourceBadge: {
+    backgroundColor: '#000000',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  sourceText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  sourceId: {
+    fontSize: 11,
+    color: '#999999',
+    marginLeft: 12,
+    fontWeight: '500',
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+  },
+  dateText: {
+    fontSize: 12,
+    color: '#666666',
+    marginLeft: 6,
+    fontWeight: '500',
+  },
+  titleContainer: {
+    padding: 20,
+    paddingBottom: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    marginBottom: 16,
     color: '#000000',
     lineHeight: 32,
+    letterSpacing: -0.5,
   },
-  meta: {
+  authorContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
-  source: {
-    fontSize: 14,
-    color: '#000000',
-    fontWeight: '600',
-  },
-  date: {
+  authorText: {
     fontSize: 14,
     color: '#666666',
-  },
-  author: {
-    fontSize: 14,
-    color: '#666666',
+    marginLeft: 8,
+    fontWeight: '500',
     fontStyle: 'italic',
-    marginBottom: 16,
   },
-  divider: {
-    marginVertical: 16,
-    backgroundColor: '#e0e0e0',
-    height: 1,
+  imageContainer: {
+    marginHorizontal: 20,
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: '#000000',
+  },
+  image: {
+    width: '100%',
+    height: 200,
+  },
+  descriptionContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  descriptionLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#000000',
+    letterSpacing: 1,
+    marginBottom: 12,
   },
   description: {
     fontSize: 16,
-    color: '#333333',
     lineHeight: 24,
+    color: '#333333',
+    fontWeight: '400',
+  },
+  contentContainer: {
+    paddingHorizontal: 20,
     marginBottom: 24,
   },
-  contentSection: {
-    marginTop: 16,
-  },
-  contentTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
+  contentLabel: {
+    fontSize: 12,
+    fontWeight: '700',
     color: '#000000',
+    letterSpacing: 1,
+    marginBottom: 12,
   },
-  fullContent: {
-    fontSize: 15,
-    color: '#333333',
-    lineHeight: 24,
+  content: {
+    fontSize: 16,
+    lineHeight: 26,
+    color: '#000000',
+    fontWeight: '400',
   },
-  footer: {
-    marginTop: 32,
-    paddingTop: 16,
+  urlContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  urlLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#000000',
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+  urlBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 16,
+    backgroundColor: '#f8f8f8',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  urlText: {
+    fontSize: 14,
+    color: '#666666',
+    marginLeft: 8,
+    flex: 1,
+    fontFamily: 'monospace',
+  },
+  urlNote: {
+    fontSize: 12,
+    color: '#999999',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  detailsContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
+    paddingTop: 24,
+  },
+  detailsLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#000000',
+    letterSpacing: 1,
+    marginBottom: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  detailKey: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666666',
+    width: 100,
+  },
+  detailValue: {
+    fontSize: 14,
+    color: '#000000',
+    flex: 1,
+    fontWeight: '400',
+  },
+  footer: {
+    padding: 20,
+    borderTopWidth: 2,
+    borderTopColor: '#000000',
+    backgroundColor: '#f8f8f8',
+    marginTop: 20,
   },
   footerText: {
     fontSize: 12,
-    color: '#999999',
-    marginBottom: 4,
+    color: '#666666',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 }); 
+ 

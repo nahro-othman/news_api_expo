@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Searchbar, Button } from 'react-native-paper';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -9,69 +9,105 @@ interface SearchBarProps {
 
 export const SearchBar: React.FC<SearchBarProps> = ({ 
   onSearch, 
-  placeholder = 'Search news...' 
+  placeholder = "Search news articles..." 
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [query, setQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      onSearch(searchQuery.trim());
+  const handleSubmit = () => {
+    if (query.trim()) {
+      onSearch(query.trim());
     }
+  };
+
+  const handleClear = () => {
+    setQuery('');
   };
 
   return (
     <View style={styles.container}>
-      <Searchbar
-        placeholder={placeholder}
-        onChangeText={setSearchQuery}
-        value={searchQuery}
-        onSubmitEditing={handleSearch}
-        style={styles.searchBar}
-        iconColor="#000000"
-        inputStyle={styles.searchInput}
-      />
-      <Button 
-        mode="contained" 
-        onPress={handleSearch}
-        style={styles.button}
-        labelStyle={styles.buttonLabel}
-        disabled={!searchQuery.trim()}
-      >
-        Search
-      </Button>
+      <View style={[styles.searchContainer, isFocused && styles.focusedContainer]}>
+        
+        {/* Search Icon */}
+        <TouchableOpacity onPress={handleSubmit} style={styles.searchIconContainer}>
+          <MaterialIcons name="search" size={20} color="#000000" />
+        </TouchableOpacity>
+
+        {/* Text Input */}
+        <TextInput
+          style={styles.textInput}
+          value={query}
+          onChangeText={setQuery}
+          placeholder={placeholder}
+          placeholderTextColor="#999999"
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          onSubmitEditing={handleSubmit}
+          returnKeyType="search"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        {/* Clear Button */}
+        {query.length > 0 && (
+          <TouchableOpacity onPress={handleClear} style={styles.clearIconContainer}>
+            <MaterialIcons name="close" size={18} color="#666666" />
+          </TouchableOpacity>
+        )}
+
+        {/* Search Button */}
+        {query.length > 0 && (
+          <TouchableOpacity onPress={handleSubmit} style={styles.searchButton}>
+            <MaterialIcons name="arrow-forward" size={16} color="#ffffff" />
+          </TouchableOpacity>
+        )}
+        
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#000000',
+  },
+  searchContainer: {
     flexDirection: 'row',
-    padding: 16,
     alignItems: 'center',
     backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  searchBar: {
-    flex: 1,
-    marginRight: 8,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 0,
-    elevation: 0,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#e0e0e0',
+    paddingHorizontal: 12,
+    height: 48,
   },
-  searchInput: {
+  focusedContainer: {
+    borderColor: '#000000',
+  },
+  searchIconContainer: {
+    marginRight: 8,
+    padding: 4,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 16,
     color: '#000000',
-  },
-  button: {
-    minWidth: 80,
-    backgroundColor: '#000000',
-    borderRadius: 0,
-    elevation: 0,
-  },
-  buttonLabel: {
-    color: '#ffffff',
     fontWeight: '500',
+    paddingVertical: 0,
+  },
+  clearIconContainer: {
+    marginLeft: 8,
+    padding: 4,
+  },
+  searchButton: {
+    backgroundColor: '#000000',
+    marginLeft: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }); 
