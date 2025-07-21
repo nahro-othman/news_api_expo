@@ -1,7 +1,9 @@
+import Constants from 'expo-constants';
+
 export const API_CONFIG = {
   NEWS_API: {
     BASE_URL: 'https://newsapi.org/v2',
-    API_KEY: '5695c0512a42489e94c94d59665b97fc', // Replace with your actual API key
+    API_KEY: Constants.expoConfig?.extra?.newsApiKey || '',
     TIMEOUT: 10000,
   },
   ENDPOINTS: {

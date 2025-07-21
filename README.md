@@ -197,8 +197,9 @@ npm install
 3. **Configure News API:**
 
    - Get your free API key from [newsapi.org](https://newsapi.org)
-   - Open `src/infrastructure/config/api.config.ts`
-   - Replace `YOUR_API_KEY` with your actual API key
+   - Copy the sample environment file: `cp .env.example .env`
+   - Open `.env` and replace `your_api_key_here` with your actual API key
+   - **Important:** Never commit the `.env` file to version control
 
 4. **Run the application:**
 
@@ -282,8 +283,9 @@ interface UserSettings {
 
 - **No External URL Opening**: Articles are displayed in-app only
 - **Input Validation**: Search and filter input sanitization
-- **API Key Security**: Proper API key management
+- **API Key Security**: Environment variables for sensitive data
 - **Error Handling**: Comprehensive error states and messages
+- **Environment File Protection**: `.env` files excluded from version control
 
 ## 🎯 Performance Optimizations
 
